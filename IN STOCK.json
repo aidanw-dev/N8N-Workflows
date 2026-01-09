@@ -1,0 +1,209 @@
+{
+  "name": "IN STOCK",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 4
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "fe05be3f-1b88-4327-bef4-40c77e757d5c",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Go to the website found in HTTP Request tool\nThe respond I only want you to say is \"In stock\" or \"No stock\"\nI want you to see if any of the fragment options from the Eclipse Noir Candle refill type is available. If it is please message me on telegram",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        208,
+        0
+      ],
+      "id": "aea62968-040a-4324-802a-ac0494a084ef",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "builtInTools": {
+          "webSearch": {}
+        },
+        "options": {
+          "maxTokens": 499
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        80,
+        208
+      ],
+      "id": "c17e3fa2-0c77-4711-92a9-b179edac9178",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "eHNvjN7WrdOdkcOM",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://imperfectlyperfectcandles.com/products/refill-relight-2-piece-candle-refill-set?variant=50924758794560",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.3,
+      "position": [
+        368,
+        208
+      ],
+      "id": "53bd3648-948b-40ed-a43e-c1c57c74c35d",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "chatId": "5121638980",
+        "text": "GOGOGO\n https://imperfectlyperfectcandles.com/products/refill-relight-2-piece-candle-refill-set?variant=50748044443968\n\nTT-LjucmhNZ FOR DISCOUNT",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1120,
+        -16
+      ],
+      "id": "9df4ca5e-c26c-4452-ba2f-fc51fbe49073",
+      "name": "Send a text message",
+      "webhookId": "813a7c01-e42c-4e3a-95e7-b92f56ec228c",
+      "credentials": {
+        "telegramApi": {
+          "id": "HaoQZPWagkL48HOJ",
+          "name": "Tech News"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a90fb237-8df3-4db4-97eb-ea76adea5f1b",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "In stock",
+              "operator": {
+                "type": "string",
+                "operation": "startsWith"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        656,
+        96
+      ],
+      "id": "3687a06f-42e7-4dba-bf09-ff4684d805ab",
+      "name": "If"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "a8e14301-dcce-416a-ba4c-2f2d8e3afa18",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "31786c567710b02b4647662587c108d4a4d737ba567a08a23c89dd224fd46193"
+  },
+  "id": "0wr8XXUVaR58QLd7",
+  "tags": []
+}

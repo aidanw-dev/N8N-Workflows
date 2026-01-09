@@ -1,0 +1,1057 @@
+{
+  "name": "Create Proxmox VM",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message",
+          "callback_query"
+        ],
+        "additionalFields": {}
+      },
+      "id": "1a0b8194-b39b-4b49-a4b0-a1f79a42c9cf",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1056,
+        384
+      ],
+      "webhookId": "949df386-ee32-4aed-ae94-ad9ac138234a",
+      "credentials": {
+        "telegramApi": {
+          "id": "MPdCFVho3wZLDklG",
+          "name": "Terry"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message?.text }}",
+                    "rightValue": "/vmcreate",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "4122e20b-4c27-4bc7-8739-f0f70f8bcfe5"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "vmcreate_command"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.callback_query }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "object",
+                      "operation": "exists",
+                      "singleValue": true
+                    },
+                    "id": "be259afc-9488-46a1-8cab-7d6e9a734ed3"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "callback"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "bc1df3ae-9ea0-479f-bc9c-e09963e15afe",
+      "name": "Check Command",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        -528,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://192.168.1.200:8006/api2/json/nodes/pve/storage/local/content",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "PVEAPIToken=root@pam!n8n=22cefd05-7fcf-43c9-bf26-80a370a9ae01"
+            }
+          ]
+        },
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "id": "3301a660-c862-436c-b4bd-2c89e0cfd058",
+      "name": "Get Proxmox OS Templates",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -320,
+        128
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "i3mi6ewUUPAd2E2M",
+          "name": "Proxmox HL"
+        }
+      },
+      "notes": "Replace:\n- YOUR_PROXMOX_SERVER with your IP/hostname\n- YOUR_NODE with your node name\n- YOUR_USER with your Proxmox user (e.g., root)\n- YOUR_REALM with your realm (e.g., pam)\n- YOUR_TOKEN_ID with your token name\n- YOUR_TOKEN_SECRET with your token secret"
+    },
+    {
+      "parameters": {
+        "jsCode": "// For demo purposes, create a simple OS selection menu\n// You can customize these based on your actual ISOs\nconst osOptions = [\n  { text: '🐧 Ubuntu 24.04', callback_data: 'os_local:iso/ubuntu-24.04.3-live-server-amd64.iso' },\n  { text: '🔷 Debian 12', callback_data: 'os_local:iso/debian-12.5.0-amd64-netinst.iso' },\n  { text: '🐉 Kali Linux', callback_data: 'os_local:iso/kali-linux-2025.3-installer-purple-amd64.iso' },\n  { text: '🪟 Windows Server 2022', callback_data: 'os_local:iso/Windows10.iso' },\n];\n\n// Group buttons in rows of 2\nconst keyboard = [];\nfor (let i = 0; i < osOptions.length; i += 2) {\n  keyboard.push(osOptions.slice(i, i + 2));\n}\n\nreturn {\n  json: {\n    chatId: $('Telegram Trigger').item.json.message.chat.id,\n    keyboard: keyboard\n  }\n};"
+      },
+      "id": "71e7f6a2-a08d-477e-aeef-f867024f85f2",
+      "name": "Format OS Buttons",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}\n\n",
+        "text": "🖥️ Please select the OS for your VM:",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "={{ $json.keyboard[0][0].text }}",
+                    "additionalFields": {
+                      "callback_data": "={{ $json.keyboard[0][0].callback_data }}"
+                    }
+                  },
+                  {
+                    "text": "= {{ $json.keyboard[0][1].text }}",
+                    "additionalFields": {
+                      "callback_data": "={{ $json.keyboard[0][1].callback_data }}"
+                    }
+                  },
+                  {
+                    "text": "={{ $json.keyboard[1][0].text }}",
+                    "additionalFields": {
+                      "callback_data": "={{ $json.keyboard[1][0].callback_data }}"
+                    }
+                  },
+                  {
+                    "text": "={{ $json.keyboard[1][1].text }}",
+                    "additionalFields": {
+                      "callback_data": "={{ $json.keyboard[1][1].callback_data }}"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {}
+      },
+      "id": "1ecde331-e399-4f59-a936-d8d2475abc35",
+      "name": "Send OS Selection",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        256,
+        112
+      ],
+      "webhookId": "67d92a52-6d31-40d5-a2da-58e84138647f",
+      "credentials": {
+        "telegramApi": {
+          "id": "MPdCFVho3wZLDklG",
+          "name": "Terry"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const callback = $input.item.json.callback_query;\nconst data = callback.data;\nconst chatId = callback.message.chat.id;\nconst messageId = callback.message.message_id;\n\n// Parse the callback data\nconst parts = data.split('_');\nconst action = parts[0];\n\n// Get existing session data from storage or create new\nlet sessionKey = `vm_session_${chatId}`;\nlet session = $getWorkflowStaticData('global')[sessionKey] || {};\n\nif (action === 'os') {\n  session.os = parts.slice(1).join('_');\n  session.step = 'cpu';\n  // Store session immediately\n  $getWorkflowStaticData('global')[sessionKey] = session;\n  \n  return {\n    json: {\n      chatId,\n      messageId,\n      action: 'ask_cpu',\n      session\n    }\n  };\n} else if (action === 'cpu') {\n  session.cpu = parts[1];\n  session.step = 'ram';\n  // Store session immediately\n  $getWorkflowStaticData('global')[sessionKey] = session;\n  \n  return {\n    json: {\n      chatId,\n      messageId,\n      action: 'ask_ram',\n      session\n    }\n  };\n} else if (action === 'ram') {\n  session.ram = parts[1];\n  session.step = 'disk';\n  // Store session immediately\n  $getWorkflowStaticData('global')[sessionKey] = session;\n  \n  return {\n    json: {\n      chatId,\n      messageId,\n      action: 'ask_disk',\n      session\n    }\n  };\n} else if (action === 'disk') {\n  session.disk = parts[1];\n  session.step = 'confirm';\n  // Store session immediately\n  $getWorkflowStaticData('global')[sessionKey] = session;\n  \n  return {\n    json: {\n      chatId,\n      messageId,\n      action: 'ask_confirm',\n      session\n    }\n  };\n} else if (action === 'confirm') {\n  const confirmed = parts[1] === 'yes';\n  // Store session immediately\n  $getWorkflowStaticData('global')[sessionKey] = session;\n  \n  return {\n    json: {\n      chatId,\n      messageId,\n      action: confirmed ? 'create_vm' : 'cancel',\n      session,\n      // Pass all session data directly for easy access\n      os: session.os,\n      cpu: session.cpu,\n      ram: session.ram,\n      disk: session.disk\n    }\n  };\n}\n\nreturn { json: { chatId, messageId, action: 'unknown', session } };"
+      },
+      "id": "40cffb0d-f755-40e8-b608-28d88451f595",
+      "name": "Parse Callback Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -304,
+        688
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "ask_cpu",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "69e69825-541f-480d-a7eb-4a459c986735"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "cpu"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "ask_ram",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "2831bf97-0c3f-4982-a059-698a020a5cad"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "ram"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "ask_disk",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "7b884475-25bd-4b9c-a505-77f98cb643d9"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "disk"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "ask_confirm",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "c9a4b531-03eb-4775-bff7-e5607a42eaea"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "confirm"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "create_vm",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "e52691b6-b6b6-48ff-a92f-62bed1c0426b"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "create"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8f4f6cc4-5fa9-4d71-a675-4def49429f24",
+      "name": "Route Action",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        -128,
+        640
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "editMessageText",
+        "chatId": "={{ $json.chatId }}",
+        "messageId": "={{ $json.messageId }}",
+        "replyMarkup": "inlineKeyboard",
+        "text": "=✅ OS selected: {{ $json.session.os }}\n\n⚙️ How many CPU cores?",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "1 Core",
+                    "additionalFields": {
+                      "callback_data": "cpu_1"
+                    }
+                  },
+                  {
+                    "text": "2 Cores",
+                    "additionalFields": {
+                      "callback_data": "cpu_2"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "4 Cores",
+                    "additionalFields": {
+                      "callback_data": "cpu_4"
+                    }
+                  },
+                  {
+                    "text": "6 Cores",
+                    "additionalFields": {
+                      "callback_data": "cpu_6"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "8 Cores",
+                    "additionalFields": {
+                      "callback_data": "cpu_8"
+                    }
+                  },
+                  {
+                    "text": "12 Cores",
+                    "additionalFields": {
+                      "callback_data": "cpu_12"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {}
+      },
+      "id": "d19f5d97-5d8e-4017-8687-6b52ad2a633a",
+      "name": "Ask CPU Cores",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        144,
+        304
+      ],
+      "webhookId": "84736b39-f0ea-4a38-8491-44a2ac0d0e18",
+      "credentials": {
+        "telegramApi": {
+          "id": "MPdCFVho3wZLDklG",
+          "name": "Terry"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "editMessageText",
+        "chatId": "={{ $json.chatId }}",
+        "messageId": "={{ $json.messageId }}",
+        "replyMarkup": "inlineKeyboard",
+        "text": "=✅ OS: {{ $json.session.os }}\n✅ CPU: {{ $json.session.cpu }} cores\n\n💾 How much RAM?",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "2 GB",
+                    "additionalFields": {
+                      "callback_data": "ram_2048"
+                    }
+                  },
+                  {
+                    "text": "4 GB",
+                    "additionalFields": {
+                      "callback_data": "ram_4096"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "8 GB",
+                    "additionalFields": {
+                      "callback_data": "ram_8192"
+                    }
+                  },
+                  {
+                    "text": "16 GB",
+                    "additionalFields": {
+                      "callback_data": "ram_16384"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "32 GB",
+                    "additionalFields": {
+                      "callback_data": "ram_32768"
+                    }
+                  },
+                  {
+                    "text": "64 GB",
+                    "additionalFields": {
+                      "callback_data": "ram_645536"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {}
+      },
+      "id": "ebe874cc-043c-4a54-b42c-d3d49254173e",
+      "name": "Ask RAM",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        144,
+        496
+      ],
+      "webhookId": "0d0ce8be-d97e-443e-bb47-4fe7b99f5794",
+      "credentials": {
+        "telegramApi": {
+          "id": "MPdCFVho3wZLDklG",
+          "name": "Terry"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "editMessageText",
+        "chatId": "={{ $json.chatId }}",
+        "messageId": "={{ $json.messageId }}",
+        "replyMarkup": "inlineKeyboard",
+        "text": "=✅ OS: {{ $json.session.os }}\n✅ CPU: {{ $json.session.cpu }} cores\n✅ RAM: {{ $json.session.ram }} GB\n\n💿 How much disk space?",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "5 GB",
+                    "additionalFields": {
+                      "callback_data": "disk_5"
+                    }
+                  },
+                  {
+                    "text": "10 GB",
+                    "additionalFields": {
+                      "callback_data": "disk_10"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "20 GB",
+                    "additionalFields": {
+                      "callback_data": "disk_20"
+                    }
+                  },
+                  {
+                    "text": "40 GB",
+                    "additionalFields": {
+                      "callback_data": "disk_40"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "80 GB",
+                    "additionalFields": {
+                      "callback_data": "disk_80"
+                    }
+                  },
+                  {
+                    "text": "120 GB",
+                    "additionalFields": {
+                      "callback_data": "disk_120"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {}
+      },
+      "id": "f26c73d5-3b48-4b0c-a801-7e50f266b2cc",
+      "name": "Ask Disk Size",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        176,
+        656
+      ],
+      "webhookId": "babd5324-5dbf-470c-8506-f6133fa53909",
+      "credentials": {
+        "telegramApi": {
+          "id": "MPdCFVho3wZLDklG",
+          "name": "Terry"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Get Next Available VMID').item.json.chatId }}",
+        "text": "=✅ VM Created Successfully!\n\n🆔 VM ID: {{ $('Get Next Available VMID').item.json.vmid }}\n📛 Name: {{ $('Get Next Available VMID').item.json.vmName }}\n🖥️ OS: {{ $('Get Next Available VMID').item.json.os }}\n⚙️ CPU: {{ $('Get Next Available VMID').item.json.cpu }} cores\n💾 RAM: {{ $('Get Next Available VMID').item.json.ram }} GB\n💿 Disk: {{ $('Get Next Available VMID').item.json.disk }} GB\n\nYou can now start the VM from your Proxmox interface.",
+        "additionalFields": {}
+      },
+      "id": "d9a777a0-2dc3-4652-bf70-04fb208e9169",
+      "name": "Send Success Message",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        432,
+        1040
+      ],
+      "webhookId": "404988a5-aa8a-42f8-95fb-72bc4d30faaf",
+      "credentials": {
+        "telegramApi": {
+          "id": "MPdCFVho3wZLDklG",
+          "name": "Terry"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Create OS selection buttons directly\nconst osOptions = [\n  { text: '🐧 Ubuntu 24.04', callback_data: 'os_local:iso/ubuntu-24.04.3-live-server-amd64.iso' },\n  { text: '🔷 Debian 12', callback_data: 'os_local:iso/debian-12.5.0-amd64-netinst.iso' },\n  { text: '🐉 Kali Linux', callback_data: 'os_local:iso/kali-linux-2025.3-installer-purple-amd64.iso' },\n  { text: '🪟 Windows Server 2022', callback_data: 'os_local:iso/Windows10.iso' },\n];\n\n// Group buttons in rows of 2\nconst keyboard = [];\nfor (let i = 0; i < osOptions.length; i += 2) {\n  keyboard.push(osOptions.slice(i, i + 2));\n}\n\nreturn {\n  json: {\n    chatId: $input.item.json.message.chat.id,\n    keyboard: keyboard\n  }\n};"
+      },
+      "id": "b6cfdf3f-068b-408b-a077-808e7ed80a94",
+      "name": "Create OS Buttons",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -336,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "chatId": "={{ $json.chatId }}",
+        "message": "={{ $json.keyboard[0][0] }}\n\n{{ $json.keyboard[0][1].text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -176,
+        336
+      ],
+      "id": "10ebb5be-7002-4495-aa82-2abc3f54c0b6",
+      "name": "Send a text message",
+      "webhookId": "739d77c9-6d84-4ac1-bfe5-cbd1cf0ec00a",
+      "credentials": {
+        "telegramApi": {
+          "id": "MPdCFVho3wZLDklG",
+          "name": "Terry"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the list of existing VMs from Proxmox\nconst existingVMs = await this.helpers.httpRequest({\n  method: 'GET',\n  url: 'http://192.168.1.200:8006/api2/json/cluster/resources?type=vm',\n  headers: {\n    'Authorization': 'PVEAPIToken=root@pam!n8n=22cefd05-7fcf-43c9-bf26-80a370a9ae01'\n  },\n  skipSslCertificateValidation: true,\n  json: true\n});\n\n// Extract all existing VMIDs\nconst existingVMIDs = existingVMs.data.map(vm => parseInt(vm.vmid));\n\n// Find the next available VMID starting from 110\nlet nextVMID = 110;\nwhile (existingVMIDs.includes(nextVMID)) {\n  nextVMID++;\n}\n\n// Generate a random VM name\nconst adjectives = ['alpha', 'bravo', 'charlie', 'delta', 'echo', 'foxtrot', 'gamma', 'hotel', 'india', 'juliet', 'kilo', 'lima', 'mike', 'november', 'oscar', 'papa', 'quebec', 'romeo', 'sierra', 'tango', 'uniform', 'victor', 'whiskey', 'xray', 'yankee', 'zulu'];\nconst colors = ['red', 'blue', 'green', 'gold', 'silver', 'bronze', 'purple', 'orange', 'black', 'white'];\nconst vmName = `${adjectives[Math.floor(Math.random() * adjectives.length)]}-${colors[Math.floor(Math.random() * colors.length)]}-${Math.floor(Math.random() * 1000)}`;\n\nreturn {\n  json: {\n    vmid: nextVMID,\n    vmName: vmName,\n    chatId: $input.item.json.chatId,\n    messageId: $input.item.json.messageId,\n    os: $input.item.json.os || $input.item.json.session.os,\n    cpu: $input.item.json.cpu || $input.item.json.session.cpu,\n    ram: $input.item.json.ram || $input.item.json.session.ram,\n    disk: $input.item.json.disk || $input.item.json.session.disk\n  }\n};\n"
+      },
+      "id": "f42eb2e6-300f-4b9c-9aab-ddb34b733974",
+      "name": "Get Next Available VMID",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        944
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://192.168.1.200:8006/api2/json/nodes/pve/qemu",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "PVEAPIToken=root@pam!n8n=22cefd05-7fcf-43c9-bf26-80a370a9ae01"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/x-www-form-urlencoded"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "vmid",
+              "value": "={{ $('Get Next Available VMID').item.json.vmid }}"
+            },
+            {
+              "name": "name",
+              "value": "={{ $('Get Next Available VMID').item.json.vmName }}"
+            },
+            {
+              "name": "cores",
+              "value": "={{ $('Get Next Available VMID').item.json.cpu }}"
+            },
+            {
+              "name": "memory",
+              "value": "={{ $('Get Next Available VMID').item.json.ram }}"
+            },
+            {
+              "name": "net0",
+              "value": "virtio,bridge=vmbr0"
+            },
+            {
+              "name": "scsi0",
+              "value": "=kingston:{{ $('Get Next Available VMID').item.json.disk }},discard=on"
+            },
+            {
+              "name": "ide2",
+              "value": "={{ $('Get Next Available VMID').item.json.os }},media=cdrom"
+            },
+            {
+              "name": "start",
+              "value": "1"
+            },
+            {
+              "name": "onboot",
+              "value": "1"
+            }
+          ]
+        },
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "id": "f0e83c73-7620-4461-b769-910d08ba2eab",
+      "name": "Create Proxmox VM1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        1008
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "i3mi6ewUUPAd2E2M",
+          "name": "Proxmox HL"
+        }
+      },
+      "notes": "Same configuration as Get Proxmox OS Templates node"
+    },
+    {
+      "parameters": {
+        "operation": "editMessageText",
+        "chatId": "={{ $json.chatId }}",
+        "messageId": "={{ $json.messageId }}",
+        "replyMarkup": "inlineKeyboard",
+        "text": "=📋 VM Configuration Summary:\n\n🖥️ OS: {{ $json.session.os }}\n⚙️ CPU Cores: {{ $json.session.cpu }}\n💾 RAM: {{ $json.session.ram }} GB\n💿 Disk: {{ $json.session.disk }} GB\n\n⚠️ Confirm VM creation?",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "✅ Yes, Create VM",
+                    "additionalFields": {
+                      "callback_data": "confirm_yes"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "❌ Cancel",
+                    "additionalFields": {
+                      "callback_data": "confirm_no"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {}
+      },
+      "id": "a915cc6d-466c-4d71-b8a2-5544b60c56c5",
+      "name": "Ask Confirmation1",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        368,
+        736
+      ],
+      "webhookId": "571c3738-f2e7-4624-b188-3e603d46e903",
+      "credentials": {
+        "telegramApi": {
+          "id": "MPdCFVho3wZLDklG",
+          "name": "Terry"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f876a2bf-0112-49fa-84ab-0e755cc8bb3f",
+              "leftValue": "={{ $json.message && $json.message.text ? $json.message.text : '' }}",
+              "rightValue": "/vmcreate",
+              "operator": {
+                "type": "string",
+                "operation": "startsWith"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -848,
+        528
+      ],
+      "id": "12336018-b781-4aa9-b2c4-135d21f5a2cb",
+      "name": "If"
+    }
+  ],
+  "pinData": {
+    "Telegram Trigger": [
+      {
+        "json": {
+          "update_id": 374226222,
+          "callback_query": {
+            "id": "3550527847652884450",
+            "from": {
+              "id": 5121638980,
+              "is_bot": false,
+              "first_name": "Aidan",
+              "language_code": "en"
+            },
+            "message": {
+              "message_id": 413,
+              "from": {
+                "id": 8333914033,
+                "is_bot": true,
+                "first_name": "Terry",
+                "username": "Terrypersonalbotforaidanbot"
+              },
+              "chat": {
+                "id": 5121638980,
+                "first_name": "Aidan",
+                "type": "private"
+              },
+              "date": 1764386577,
+              "text": "🖥️ Please select the OS for your VM:\n\nThis message was sent automatically with n8n",
+              "entities": [
+                {
+                  "offset": 39,
+                  "length": 41,
+                  "type": "italic"
+                },
+                {
+                  "offset": 80,
+                  "length": 3,
+                  "type": "text_link",
+                  "url": "https://n8n.io/?utm_source=n8n-internal&utm_medium=powered_by&utm_campaign=n8n-nodes-base.telegram_ab2bce4d6de3dc789cefabc7bdb1133359a823d728fc57fccf8b9498a8f7a843"
+                }
+              ],
+              "link_preview_options": {
+                "is_disabled": true
+              },
+              "reply_markup": {
+                "inline_keyboard": [
+                  [
+                    {
+                      "text": "🐧 Ubuntu 24.04",
+                      "callback_data": "os_local:iso/ubuntu-24.04.3-live-server-amd64.iso"
+                    },
+                    {
+                      "text": " 🔷 Debian 12",
+                      "callback_data": "os_local:iso/debian-12.5.0-amd64-netinst.iso"
+                    },
+                    {
+                      "text": "🐉 Kali Linux",
+                      "callback_data": "os_local:iso/kali-linux-2025.3-installer-purple-amd64.iso"
+                    },
+                    {
+                      "text": "🪟 Windows Server 2022",
+                      "callback_data": "os_local:iso/Windows10.iso"
+                    }
+                  ]
+                ]
+              }
+            },
+            "chat_instance": "4958650025145582870",
+            "data": "os_local:iso/ubuntu-24.04.3-live-server-amd64.iso"
+          }
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Check Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Command": {
+      "main": [
+        [
+          {
+            "node": "Create OS Buttons",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Parse Callback Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Proxmox OS Templates": {
+      "main": [
+        [
+          {
+            "node": "Format OS Buttons",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format OS Buttons": {
+      "main": [
+        [
+          {
+            "node": "Send OS Selection",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Callback Data": {
+      "main": [
+        [
+          {
+            "node": "Route Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Action": {
+      "main": [
+        [
+          {
+            "node": "Ask CPU Cores",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ask RAM",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ask Disk Size",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ask Confirmation1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Next Available VMID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create OS Buttons": {
+      "main": [
+        [
+          {
+            "node": "Send OS Selection",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Next Available VMID": {
+      "main": [
+        [
+          {
+            "node": "Create Proxmox VM1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Proxmox VM1": {
+      "main": [
+        [
+          {
+            "node": "Send Success Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "38cb8e92-1573-4086-86d5-cfb300203ea4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "31786c567710b02b4647662587c108d4a4d737ba567a08a23c89dd224fd46193"
+  },
+  "id": "lT7CxSRh32NPyPJ3",
+  "tags": []
+}

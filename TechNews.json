@@ -1,0 +1,636 @@
+{
+  "name": "TechNews",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 13
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -608,
+        32
+      ],
+      "id": "901f259c-e9ef-4082-8aa5-7368dfc59bc3",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://www.bleepingcomputer.com/feed/",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        -320,
+        -64
+      ],
+      "id": "5ea3ba82-e9e4-44b8-8d44-e1171398a87d",
+      "name": "RSS Read"
+    },
+    {
+      "parameters": {
+        "authentication": "webhook",
+        "content": "=Tech news today!\n{{ $json.text }}\n{{ $json.stdout }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        1264,
+        192
+      ],
+      "id": "e48d9a34-7677-49f0-8384-9dbc4f0650f9",
+      "name": "Discord",
+      "webhookId": "70b3cb84-d10b-4041-a400-a937f3c0b657",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "maxItems": 5
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -48
+      ],
+      "id": "35205ef4-93ef-4b85-8467-4208ddab3ac4",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "command": "ping 1.1.1.1 -c 3"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        32,
+        448
+      ],
+      "id": "d68f601b-9bf4-4355-96cc-54eba6e93ba4",
+      "name": "Execute Command"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        752,
+        224
+      ],
+      "id": "879b320b-69e7-4f55-9399-7f2dc07882e7",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Hey, your job is to summarize this article in 5 sentences, go! {{ $json.content }}{{ $json.guid }}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        208,
+        64
+      ],
+      "id": "5d47373c-5af2-4d38-8ffc-c770866ef486",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Simpifly this in 30 words {{ $json.stdout }}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        240,
+        368
+      ],
+      "id": "22ea33ad-4ed0-46b4-8c81-ac5d265e61fb",
+      "name": "Basic LLM Chain1"
+    },
+    {
+      "parameters": {
+        "chatId": "5121638980",
+        "text": "={{ $json.text }}\n{{ $json.stdout }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1024,
+        192
+      ],
+      "id": "96baf9d3-9b39-467d-96dd-542af8b13e7a",
+      "name": "Send a text message",
+      "webhookId": "c269e9b5-703c-4abb-82cf-c91a75e37cf2",
+      "credentials": {
+        "telegramApi": {
+          "id": "MPdCFVho3wZLDklG",
+          "name": "Terry"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        144,
+        272
+      ],
+      "id": "f7d5609a-1b67-4ee8-8fd1-94cb3772bf79",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "eHNvjN7WrdOdkcOM",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        176,
+        576
+      ],
+      "id": "02292a6c-75eb-4b48-b060-a6723e55278e",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "eHNvjN7WrdOdkcOM",
+          "name": "OpenAi account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "RSS Read": [
+      {
+        "json": {
+          "creator": "Lawrence Abrams",
+          "title": "Microsoft: Windows 10 KB5072653 OOB update fixes ESU install errors",
+          "link": "https://www.bleepingcomputer.com/news/microsoft/microsoft-windows-10-kb5072653-oob-update-fixes-esu-install-errors/",
+          "pubDate": "Mon, 17 Nov 2025 19:22:11 -0500",
+          "dc:creator": "Lawrence Abrams",
+          "content": "Microsoft has released an emergency Windows 10 KB5072653 out-of-band update to resolve ongoing issues with installing the November extended security updates. [...]",
+          "contentSnippet": "Microsoft has released an emergency Windows 10 KB5072653 out-of-band update to resolve ongoing issues with installing the November extended security updates. [...]",
+          "guid": "https://www.bleepingcomputer.com/news/microsoft/microsoft-windows-10-kb5072653-oob-update-fixes-esu-install-errors/",
+          "categories": [
+            "Microsoft",
+            "Security"
+          ],
+          "isoDate": "2025-11-18T00:22:11.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "Bill Toulas",
+          "title": "Malicious NPM packages abuse Adspect redirects to evade security",
+          "link": "https://www.bleepingcomputer.com/news/security/malicious-npm-packages-abuse-adspect-redirects-to-evade-security/",
+          "pubDate": "Mon, 17 Nov 2025 18:47:46 -0500",
+          "dc:creator": "Bill Toulas",
+          "content": "Seven packages published on the Node Package Manager (npm) registry use the Adspect cloud-based service to separate researchers from potential victims and lead them to malicious locations. [...]",
+          "contentSnippet": "Seven packages published on the Node Package Manager (npm) registry use the Adspect cloud-based service to separate researchers from potential victims and lead them to malicious locations. [...]",
+          "guid": "https://www.bleepingcomputer.com/news/security/malicious-npm-packages-abuse-adspect-redirects-to-evade-security/",
+          "categories": [
+            "Security",
+            "CryptoCurrency"
+          ],
+          "isoDate": "2025-11-17T23:47:46.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "Mayank Parmar",
+          "title": "xAI's Grok 4.1 rolls out with improved quality and speed for free",
+          "link": "https://www.bleepingcomputer.com/news/artificial-intelligence/xais-grok-41-rolls-out-with-improved-quality-and-speed-for-free/",
+          "pubDate": "Mon, 17 Nov 2025 17:56:28 -0500",
+          "dc:creator": "Mayank Parmar",
+          "content": "Elon Musk-owned xAI has started rolling out Grok 4.1, which is an upgrade to the existing Grok 4 model, and it delivers some incremental improvements. [...]",
+          "contentSnippet": "Elon Musk-owned xAI has started rolling out Grok 4.1, which is an upgrade to the existing Grok 4 model, and it delivers some incremental improvements. [...]",
+          "guid": "https://www.bleepingcomputer.com/news/artificial-intelligence/xais-grok-41-rolls-out-with-improved-quality-and-speed-for-free/",
+          "categories": [
+            "Artificial Intelligence",
+            "Technology"
+          ],
+          "isoDate": "2025-11-17T22:56:28.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "Bill Toulas",
+          "title": "RondoDox botnet malware now hacks servers using XWiki flaw",
+          "link": "https://www.bleepingcomputer.com/news/security/rondodox-botnet-malware-now-hacks-servers-using-xwiki-flaw/",
+          "pubDate": "Mon, 17 Nov 2025 17:41:30 -0500",
+          "dc:creator": "Bill Toulas",
+          "content": "The RondoDox botnet malware is now exploiting a critical remote code execution (RCE) flaw in XWiki Platform tracked as CVE-2025-24893. [...]",
+          "contentSnippet": "The RondoDox botnet malware is now exploiting a critical remote code execution (RCE) flaw in XWiki Platform tracked as CVE-2025-24893. [...]",
+          "guid": "https://www.bleepingcomputer.com/news/security/rondodox-botnet-malware-now-hacks-servers-using-xwiki-flaw/",
+          "categories": [
+            "Security"
+          ],
+          "isoDate": "2025-11-17T22:41:30.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "Mayank Parmar",
+          "title": "Google Gemini 3 spotted on AI Studio ahead of imminent release",
+          "link": "https://www.bleepingcomputer.com/news/google/google-gemini-3-spotted-on-ai-studio-ahead-of-imminent-release/",
+          "pubDate": "Mon, 17 Nov 2025 16:52:21 -0500",
+          "dc:creator": "Mayank Parmar",
+          "content": "Gemini 3, which could be Google's best large language model, could begin rolling out in the next few days or hours, as the model has been spotted on AI Studio. [...]",
+          "contentSnippet": "Gemini 3, which could be Google's best large language model, could begin rolling out in the next few days or hours, as the model has been spotted on AI Studio. [...]",
+          "guid": "https://www.bleepingcomputer.com/news/google/google-gemini-3-spotted-on-ai-studio-ahead-of-imminent-release/",
+          "categories": [
+            "Google",
+            "Artificial Intelligence"
+          ],
+          "isoDate": "2025-11-17T21:52:21.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "Bill Toulas",
+          "title": "Eurofiber France warns of breach after hacker tries to sell customer data",
+          "link": "https://www.bleepingcomputer.com/news/security/eurofiber-france-warns-of-breach-after-hacker-tries-to-sell-customer-data/",
+          "pubDate": "Mon, 17 Nov 2025 16:14:28 -0500",
+          "dc:creator": "Bill Toulas",
+          "content": "Eurofiber France disclosed a data breach it discovered late last week when hackers gained access to its ticket management system by exploiting a vulnerability and exfiltrated information. [...]",
+          "contentSnippet": "Eurofiber France disclosed a data breach it discovered late last week when hackers gained access to its ticket management system by exploiting a vulnerability and exfiltrated information. [...]",
+          "guid": "https://www.bleepingcomputer.com/news/security/eurofiber-france-warns-of-breach-after-hacker-tries-to-sell-customer-data/",
+          "categories": [
+            "Security"
+          ],
+          "isoDate": "2025-11-17T21:14:28.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "Sergiu Gatlan",
+          "title": "Princeton University discloses data breach affecting donors, alumni",
+          "link": "https://www.bleepingcomputer.com/news/security/princeton-university-discloses-data-breach-affecting-donors-alumni/",
+          "pubDate": "Mon, 17 Nov 2025 14:36:52 -0500",
+          "dc:creator": "Sergiu Gatlan",
+          "content": "A Princeton University database was compromised in a cyberattack on November 10, exposing the personal information of alumni, donors, faculty members, and students. [...]",
+          "contentSnippet": "A Princeton University database was compromised in a cyberattack on November 10, exposing the personal information of alumni, donors, faculty members, and students. [...]",
+          "guid": "https://www.bleepingcomputer.com/news/security/princeton-university-discloses-data-breach-affecting-donors-alumni/",
+          "categories": [
+            "Security",
+            "Education"
+          ],
+          "isoDate": "2025-11-17T19:36:52.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "Bill Toulas",
+          "title": "Dutch police seizes 250 servers used by “bulletproof hosting” service",
+          "link": "https://www.bleepingcomputer.com/news/security/dutch-police-seizes-250-servers-used-by-bulletproof-hosting-service/",
+          "pubDate": "Mon, 17 Nov 2025 14:19:31 -0500",
+          "dc:creator": "Bill Toulas",
+          "content": "The police in the Netherlands have seized around 250 physical servers powering a bulletproof hosting service in the country used exclusively by cybercriminals for providing complete anonymity. [...]",
+          "contentSnippet": "The police in the Netherlands have seized around 250 physical servers powering a bulletproof hosting service in the country used exclusively by cybercriminals for providing complete anonymity. [...]",
+          "guid": "https://www.bleepingcomputer.com/news/security/dutch-police-seizes-250-servers-used-by-bulletproof-hosting-service/",
+          "categories": [
+            "Security"
+          ],
+          "isoDate": "2025-11-17T19:19:31.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "Sergiu Gatlan",
+          "title": "Microsoft: Azure hit by 15 Tbps DDoS attack using 500,000 IP addresses",
+          "link": "https://www.bleepingcomputer.com/news/microsoft/microsoft-aisuru-botnet-used-500-000-ips-in-15-tbps-azure-ddos-attack/",
+          "pubDate": "Mon, 17 Nov 2025 12:13:15 -0500",
+          "dc:creator": "Sergiu Gatlan",
+          "content": "Microsoft said today that the Aisuru botnet hit its Azure network with a 15.72 terabits per second (Tbps) DDoS attack, launched from over 500,000 IP addresses. [...]",
+          "contentSnippet": "Microsoft said today that the Aisuru botnet hit its Azure network with a 15.72 terabits per second (Tbps) DDoS attack, launched from over 500,000 IP addresses. [...]",
+          "guid": "https://www.bleepingcomputer.com/news/microsoft/microsoft-aisuru-botnet-used-500-000-ips-in-15-tbps-azure-ddos-attack/",
+          "categories": [
+            "Microsoft",
+            "Security"
+          ],
+          "isoDate": "2025-11-17T17:13:15.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "Ax Sharma",
+          "title": "DoorDash email spoofing vulnerability sparks messy disclosure dispute",
+          "link": "https://www.bleepingcomputer.com/news/security/doordash-email-spoofing-vulnerability-sparks-messy-disclosure-dispute/",
+          "pubDate": "Mon, 17 Nov 2025 11:32:09 -0500",
+          "dc:creator": "Ax Sharma",
+          "content": "A vulnerability in DoorDash's systems could allow anyone to send \"official\" DoorDash-themed emails right from company's authorized servers, paving a near-perfect phishing channel. DoorDash has now patched the issue, but a contentious disclosure dispute has erupted, with both sides accusing each other of acting in bad faith. [...]",
+          "contentSnippet": "A vulnerability in DoorDash's systems could allow anyone to send \"official\" DoorDash-themed emails right from company's authorized servers, paving a near-perfect phishing channel. DoorDash has now patched the issue, but a contentious disclosure dispute has erupted, with both sides accusing each other of acting in bad faith. [...]",
+          "guid": "https://www.bleepingcomputer.com/news/security/doordash-email-spoofing-vulnerability-sparks-messy-disclosure-dispute/",
+          "categories": [
+            "Security"
+          ],
+          "isoDate": "2025-11-17T16:32:09.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "Sergiu Gatlan",
+          "title": "Pennsylvania AG confirms data breach after INC Ransom attack",
+          "link": "https://www.bleepingcomputer.com/news/security/pennsylvania-ag-confirms-data-breach-after-inc-ransom-attack/",
+          "pubDate": "Mon, 17 Nov 2025 10:57:48 -0500",
+          "dc:creator": "Sergiu Gatlan",
+          "content": "The office of Pennsylvania's attorney general has confirmed that the ransomware gang behind an August 2025 cyberattack stole files containing personal and medical information. [...]",
+          "contentSnippet": "The office of Pennsylvania's attorney general has confirmed that the ransomware gang behind an August 2025 cyberattack stole files containing personal and medical information. [...]",
+          "guid": "https://www.bleepingcomputer.com/news/security/pennsylvania-ag-confirms-data-breach-after-inc-ransom-attack/",
+          "categories": [
+            "Security"
+          ],
+          "isoDate": "2025-11-17T15:57:48.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "Sergiu Gatlan",
+          "title": "Microsoft: Windows bug blocks Microsoft 365 desktop app installs",
+          "link": "https://www.bleepingcomputer.com/news/microsoft/microsoft-windows-bug-blocks-microsoft-365-desktop-app-installs/",
+          "pubDate": "Mon, 17 Nov 2025 09:54:31 -0500",
+          "dc:creator": "Sergiu Gatlan",
+          "content": "​Microsoft is working to resolve a known issue preventing users from installing the Microsoft 365 desktop apps on Windows devices. [...]",
+          "contentSnippet": "​Microsoft is working to resolve a known issue preventing users from installing the Microsoft 365 desktop apps on Windows devices. [...]",
+          "guid": "https://www.bleepingcomputer.com/news/microsoft/microsoft-windows-bug-blocks-microsoft-365-desktop-app-installs/",
+          "categories": [
+            "Microsoft"
+          ],
+          "isoDate": "2025-11-17T14:54:31.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "Bill Toulas",
+          "title": "Google to flag Android apps with excessive battery use on the Play Store",
+          "link": "https://www.bleepingcomputer.com/news/security/google-to-flag-android-apps-with-excessive-battery-use-on-the-play-store/",
+          "pubDate": "Sun, 16 Nov 2025 10:15:25 -0500",
+          "dc:creator": "Bill Toulas",
+          "content": "Google will start taking action on Android apps in the official Google Play store that have high background activity and cause excessive battery draining. [...]",
+          "contentSnippet": "Google will start taking action on Android apps in the official Google Play store that have high background activity and cause excessive battery draining. [...]",
+          "guid": "https://www.bleepingcomputer.com/news/security/google-to-flag-android-apps-with-excessive-battery-use-on-the-play-store/",
+          "categories": [
+            "Security",
+            "Google",
+            "Mobile"
+          ],
+          "isoDate": "2025-11-16T15:15:25.000Z"
+        }
+      }
+    ],
+    "Limit": [
+      {
+        "json": {
+          "creator": "Lawrence Abrams",
+          "title": "Microsoft: Windows 10 KB5072653 OOB update fixes ESU install errors",
+          "link": "https://www.bleepingcomputer.com/news/microsoft/microsoft-windows-10-kb5072653-oob-update-fixes-esu-install-errors/",
+          "pubDate": "Mon, 17 Nov 2025 19:22:11 -0500",
+          "dc:creator": "Lawrence Abrams",
+          "content": "Microsoft has released an emergency Windows 10 KB5072653 out-of-band update to resolve ongoing issues with installing the November extended security updates. [...]",
+          "contentSnippet": "Microsoft has released an emergency Windows 10 KB5072653 out-of-band update to resolve ongoing issues with installing the November extended security updates. [...]",
+          "guid": "https://www.bleepingcomputer.com/news/microsoft/microsoft-windows-10-kb5072653-oob-update-fixes-esu-install-errors/",
+          "categories": [
+            "Microsoft",
+            "Security"
+          ],
+          "isoDate": "2025-11-18T00:22:11.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "Bill Toulas",
+          "title": "Malicious NPM packages abuse Adspect redirects to evade security",
+          "link": "https://www.bleepingcomputer.com/news/security/malicious-npm-packages-abuse-adspect-redirects-to-evade-security/",
+          "pubDate": "Mon, 17 Nov 2025 18:47:46 -0500",
+          "dc:creator": "Bill Toulas",
+          "content": "Seven packages published on the Node Package Manager (npm) registry use the Adspect cloud-based service to separate researchers from potential victims and lead them to malicious locations. [...]",
+          "contentSnippet": "Seven packages published on the Node Package Manager (npm) registry use the Adspect cloud-based service to separate researchers from potential victims and lead them to malicious locations. [...]",
+          "guid": "https://www.bleepingcomputer.com/news/security/malicious-npm-packages-abuse-adspect-redirects-to-evade-security/",
+          "categories": [
+            "Security",
+            "CryptoCurrency"
+          ],
+          "isoDate": "2025-11-17T23:47:46.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "Mayank Parmar",
+          "title": "xAI's Grok 4.1 rolls out with improved quality and speed for free",
+          "link": "https://www.bleepingcomputer.com/news/artificial-intelligence/xais-grok-41-rolls-out-with-improved-quality-and-speed-for-free/",
+          "pubDate": "Mon, 17 Nov 2025 17:56:28 -0500",
+          "dc:creator": "Mayank Parmar",
+          "content": "Elon Musk-owned xAI has started rolling out Grok 4.1, which is an upgrade to the existing Grok 4 model, and it delivers some incremental improvements. [...]",
+          "contentSnippet": "Elon Musk-owned xAI has started rolling out Grok 4.1, which is an upgrade to the existing Grok 4 model, and it delivers some incremental improvements. [...]",
+          "guid": "https://www.bleepingcomputer.com/news/artificial-intelligence/xais-grok-41-rolls-out-with-improved-quality-and-speed-for-free/",
+          "categories": [
+            "Artificial Intelligence",
+            "Technology"
+          ],
+          "isoDate": "2025-11-17T22:56:28.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "Bill Toulas",
+          "title": "RondoDox botnet malware now hacks servers using XWiki flaw",
+          "link": "https://www.bleepingcomputer.com/news/security/rondodox-botnet-malware-now-hacks-servers-using-xwiki-flaw/",
+          "pubDate": "Mon, 17 Nov 2025 17:41:30 -0500",
+          "dc:creator": "Bill Toulas",
+          "content": "The RondoDox botnet malware is now exploiting a critical remote code execution (RCE) flaw in XWiki Platform tracked as CVE-2025-24893. [...]",
+          "contentSnippet": "The RondoDox botnet malware is now exploiting a critical remote code execution (RCE) flaw in XWiki Platform tracked as CVE-2025-24893. [...]",
+          "guid": "https://www.bleepingcomputer.com/news/security/rondodox-botnet-malware-now-hacks-servers-using-xwiki-flaw/",
+          "categories": [
+            "Security"
+          ],
+          "isoDate": "2025-11-17T22:41:30.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "Mayank Parmar",
+          "title": "Google Gemini 3 spotted on AI Studio ahead of imminent release",
+          "link": "https://www.bleepingcomputer.com/news/google/google-gemini-3-spotted-on-ai-studio-ahead-of-imminent-release/",
+          "pubDate": "Mon, 17 Nov 2025 16:52:21 -0500",
+          "dc:creator": "Mayank Parmar",
+          "content": "Gemini 3, which could be Google's best large language model, could begin rolling out in the next few days or hours, as the model has been spotted on AI Studio. [...]",
+          "contentSnippet": "Gemini 3, which could be Google's best large language model, could begin rolling out in the next few days or hours, as the model has been spotted on AI Studio. [...]",
+          "guid": "https://www.bleepingcomputer.com/news/google/google-gemini-3-spotted-on-ai-studio-ahead-of-imminent-release/",
+          "categories": [
+            "Google",
+            "Artificial Intelligence"
+          ],
+          "isoDate": "2025-11-17T21:52:21.000Z"
+        }
+      }
+    ],
+    "Execute Command": [
+      {
+        "json": {
+          "exitCode": 0,
+          "stderr": "",
+          "stdout": "PING 1.1.1.1 (1.1.1.1): 56 data bytes\n64 bytes from 1.1.1.1: seq=0 ttl=42 time=3.969 ms\n64 bytes from 1.1.1.1: seq=1 ttl=42 time=3.915 ms\n64 bytes from 1.1.1.1: seq=2 ttl=42 time=3.928 ms\n\n--- 1.1.1.1 ping statistics ---\n3 packets transmitted, 3 packets received, 0% packet loss\nround-trip min/avg/max = 3.915/3.937/3.969 ms"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "RSS Read",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Execute Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Read": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        [
+          {
+            "node": "Discord",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "a3b9a214-740f-46af-957a-492bb86317f4",
+  "meta": {
+    "instanceId": "31786c567710b02b4647662587c108d4a4d737ba567a08a23c89dd224fd46193"
+  },
+  "id": "8mJ402LhxBqeHI3d",
+  "tags": []
+}
